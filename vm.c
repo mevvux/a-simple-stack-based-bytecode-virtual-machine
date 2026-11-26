@@ -1,6 +1,20 @@
+#include <stdio.h>
 #include "vm.h"
-//this is just a test to see whether i wasted hour of my life or not
+
 int main(void) {
-    int code[] = { PUSH, 5, PUSH, 5, ADD, HALT };//IT HAS TO THROW OUT A 10
+    int code[] = {
+        PUSH, 5,
+        PUSH, 5,
+        ADD,
+        PRNT,
+        PUSH, 6,
+        SUB,
+        PRNT,
+        PUSH,4,
+        MUL,
+        PRNT,
+        PUSH, 2,
+        DIV,
+        END };//IT HAS TO THROW OUT A 8
     return run(code, sizeof code / sizeof code[0]);
 }
