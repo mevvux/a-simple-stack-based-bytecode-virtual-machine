@@ -16,6 +16,9 @@
 #define DIV 0x06 // is there a diffrence between copying and printing
 #define PRNT 0x07 
 #define DUP 0x08
+#define JMP 0x09 // le jmp
+#define JNZ 0x0A // le condition jmp
+
 
 //stack time (im going to steal it from my previus uni project)
 
@@ -172,6 +175,44 @@ static bool PRNT_FUNC(Stack *stack){ // im about o do something stupid hhhh
     return true;
 }
 
+static int JMP_FUNC(size_t *pc, size_t len,const int *code){
+    if (*pc >= len)
+    {
+        fprintf(stderr,"ERROR : Missing Operand\n");
+        return 1;
+    }
+    int target= code[(*pc)++]; // this is how to read the op right? we'll figure out in testing
+    if (target < 0 || target >= len)//check if its within bounds hhhh
+    {
+        fprintf(stderr,"ERROR : You can't jump there\n");
+        return 1;
+    }
+    *pc = (size_t)target; //sets the index of the code runner basically checks or jumps back and forth hhh
+    return 0;
+}
+
+static int JNZ_FUNC(Stack *stack, size_t *pc, size_t len, const int *code){
+    if (*pc >= len)
+    {
+        fprintf(stderr,"ERROR : Missing Operand\n");
+        return 1;
+    }
+    int target= code[(*pc)++]; // this is how to read the op right? we'll figure out in testing
+    if (target < 0 || target >= len)//check if its within bounds hhhh
+    {
+        fprintf(stderr,"ERROR : You can't jump there\n");
+        return 1;
+    }
+        int cond;
+    if (!stack_pop(stack, &cond)) {
+        return 1;
+    }
+    if (cond != 0) {
+        *pc = (size_t)target;
+    }
+    return 0;
+}
+
 static int run(const int *code, size_t len){
     Stack stack = {0};
     size_t pc = 0;
@@ -232,11 +273,20 @@ static int run(const int *code, size_t len){
                 return 1;
             }
             break;
-        case END: // ill make it a function later
-            int result;
-            if (!stack_pop(&stack, &result)) {
-                return 1;}
-            printf("%d\n", result);
+        case JMP:
+            if (JMP_FUNC(&pc,len,code))
+            {
+                return 1;
+            }
+            break;
+        case JNZ:
+            if (JNZ_FUNC(&stack,&pc,len,code))
+            {
+                return 0;
+            }
+            break;
+            
+        case END: //we threw it put after making the prnt
             return 0;
         default:
             fprintf(stderr, "THE FUCK HAVE YOU WROTE %d\n", code[pc - 1]);
